@@ -2,32 +2,27 @@ package com.racha.rachadev.models;
 
 import java.time.LocalDateTime;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Entity
 @Getter
 @Setter
 @NoArgsConstructor
+@Document(collection = "post")
 public class Post {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private Long id;
+    private String id;
 
     @NotBlank(message = "Post title missing")
     private String title;
 
-    @Column(columnDefinition = "TEXT")
     @NotBlank(message = "Post body missing")
     private String body;
 
@@ -35,7 +30,6 @@ public class Post {
 
     private LocalDateTime updatedAt;
 
-    @ManyToOne
-    @JoinColumn(name="account_id", referencedColumnName = "id", nullable = true)
+    @DBRef
     private Account account;
 }

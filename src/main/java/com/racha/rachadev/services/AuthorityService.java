@@ -18,7 +18,7 @@ public class AuthorityService {
         return authorityRepository.save(authority);
     }
 
-    public Optional<Authority> findById(Long id) {
+    public Optional<Authority> findById(String id) {
         return authorityRepository.findById(id);
     }
 }

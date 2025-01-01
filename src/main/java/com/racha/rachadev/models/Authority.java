@@ -1,19 +1,20 @@
 package com.racha.rachadev.models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Entity
 @Getter
 @Setter
 @NoArgsConstructor
+@Document(collection = "authority")
 public class Authority {
     
     @Id
-    private long id;
+    private String id;
 
     private String name;
 

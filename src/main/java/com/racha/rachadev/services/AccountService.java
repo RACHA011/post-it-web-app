@@ -34,6 +34,9 @@ public class AccountService implements UserDetailsService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private AuthorityService authorityService;
+
     public Account save(Account account) {
         account.setPassword(passwordEncoder.encode(account.getPassword()));
         if (account.getRole() == null) {
@@ -52,8 +55,24 @@ public class AccountService implements UserDetailsService {
 
             }
         }
+        // Generate a new ID if not provided
+        if (account.getId() == null || account.getId().isEmpty()) {
+            // Check if the email already exists
+            if (accountRepository.findByEmailIgnoreCase(account.getEmail()).isPresent()) {
+                throw new RuntimeException("Email already exists");
+            } 
+            Optional<Account> maxIdOpt = findMaxId();
+            String newidString = maxIdOpt.map(Account::getId).orElse("0");
+            Long newId = Long.parseLong(newidString) + 1;
+            account.setId(String.valueOf(newId));
+        }
+
         return accountRepository.save(account);
     }
+    public Optional<Account> findMaxId() {
+        return accountRepository.findTopByOrderByIdDesc();
+    }
+
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
@@ -68,8 +87,12 @@ public class AccountService implements UserDetailsService {
 
         grantedAuthority.add(new SimpleGrantedAuthority(account.getRole()));
 
-        for (Authority _auth : account.getAuthorities()) {
-            grantedAuthority.add(new SimpleGrantedAuthority(_auth.getName()));
+        for (String _auth : account.getAuthorityIds()) {
+            Optional<Authority> authority = authorityService.findById(_auth);
+            if (!authority.isPresent()) {
+                throw new UsernameNotFoundException("Authority not found for ID: " + _auth);
+            }
+            grantedAuthority.add(new SimpleGrantedAuthority(authority.get().getName()));
         }
 
         return new User(account.getEmail(), account.getPassword(), grantedAuthority);
@@ -79,7 +102,7 @@ public class AccountService implements UserDetailsService {
         return accountRepository.findByEmailIgnoreCase(email);
     }
 
-    public Optional<Account> findById(Long id) {
+    public Optional<Account> findById(String id) {
         return accountRepository.findById(id);
     }
 

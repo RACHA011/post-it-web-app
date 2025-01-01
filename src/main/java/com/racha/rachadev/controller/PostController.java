@@ -20,9 +20,6 @@ import com.racha.rachadev.services.PostService;
 
 import jakarta.validation.Valid;
 
-
-
-
 @Controller
 public class PostController {
     @Autowired
@@ -32,22 +29,28 @@ public class PostController {
     private AccountService accountService;
 
     @GetMapping("/post/{id}")
-    public String getPost(@PathVariable("id") Long id, Model model, Principal principal) {
+    public String getPost(@PathVariable("id") String id, Model model, Principal principal) {
 
         Optional<Post> optionalPost = postService.getById(id);
         String authUser = "email";
 
-        if(optionalPost.isPresent()) {
+        if (optionalPost.isPresent()) {
             Post post = optionalPost.get();
             model.addAttribute("post", post);
 
             // get username of current logged in session user
-            // String authUserName = SecurityContextHolder.getContext().getAuthentication().getAuthent();
+            // String authUserName =
+            // SecurityContextHolder.getContext().getAuthentication().getAuthent();
 
             if (principal != null) {
                 authUser = principal.getName();
             }
-            if (authUser.equals(post.getAccount().getEmail())) {
+
+            Optional<Account> optionalAccount = accountService.findById(post.getAccount().getId());
+            if (!optionalAccount.isPresent()) {
+                return "404";
+            }
+            if (authUser.equals(optionalAccount.get().getEmail())) {
                 model.addAttribute("isOwner", true);
             } else {
                 model.addAttribute("isOwner", false);
@@ -56,13 +59,12 @@ public class PostController {
             return "post_views/post";
         } else {
             return "404";
-         }
+        }
 
     }
 
-
     @GetMapping("/post/add")
-    public String addPost(Model model,Principal principal) {
+    public String addPost(Model model, Principal principal) {
         String authUser = "email";
         if (principal != null) {
             authUser = principal.getName();
@@ -81,25 +83,29 @@ public class PostController {
 
     @PostMapping("/post/add")
     @PreAuthorize("isAuthenticated()")
-    public String addPostHandler(@Valid @ModelAttribute Post post, BindingResult result ,Principal principal) {
+    public String addPostHandler(@Valid @ModelAttribute Post post, BindingResult result, Principal principal) {
         String AuthUser = "email";
         if (result.hasErrors()) {
             return "post_views/post_add";
-        } 
-        if(principal != null) {
+        }
+        if (principal != null) {
             AuthUser = principal.getName();
         }
-        if (post.getAccount().getEmail().compareToIgnoreCase(AuthUser) < 0) {
+        Optional<Account> optionalAccount = accountService.findById(post.getAccount().getId());
+            if (!optionalAccount.isPresent()) {
+                return "404";
+            }
+        if (optionalAccount.get().getEmail().compareToIgnoreCase(AuthUser) < 0) {
             return "redirect:/?error";
         }
         postService.save(post);
-        
+
         return "redirect:/post/" + post.getId();
     }
-    
+
     @GetMapping("/post/{id}/edit")
     @PreAuthorize("isAuthenticated()")
-    public String getPostForEdit(@PathVariable Long id, Model model) {
+    public String getPostForEdit(@PathVariable String id, Model model) {
         Optional<Post> optionalPost = postService.getById(id);
         if (optionalPost.isPresent()) {
             Post post = optionalPost.get();
@@ -110,17 +116,17 @@ public class PostController {
         }
 
     }
-    
+
     @PostMapping("/post/{id}/edit")
     @PreAuthorize("isAuthenticated()")
-    public String updatePost(@Valid @ModelAttribute Post post, BindingResult result, @PathVariable Long id) {
+    public String updatePost(@Valid @ModelAttribute Post post, BindingResult result, @PathVariable String id) {
         Optional<Post> optionalPost = postService.getById(id);
 
         if (result.hasErrors()) {
             return "post_views/post_edit";
-        } 
+        }
 
-        if(optionalPost.isPresent()) {
+        if (optionalPost.isPresent()) {
             Post existingPost = optionalPost.get();
             existingPost.setTitle(post.getTitle());
             existingPost.setBody(post.getBody());
@@ -132,19 +138,17 @@ public class PostController {
 
     @GetMapping("/post/{id}/delete")
     @PreAuthorize("isAuthenticated()")
-    public String deletePost(@PathVariable Long id) {
+    public String deletePost(@PathVariable String id) {
         Optional<Post> optionalPost = postService.getById(id);
-        
 
         if (optionalPost.isPresent()) {
             Post post = optionalPost.get();
             postService.delete(post);
             return "redirect:/";
         } else {
-            
+
             return "redirect:/?error";
         }
 
-        
     }
 }

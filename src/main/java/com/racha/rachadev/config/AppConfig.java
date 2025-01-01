@@ -35,8 +35,8 @@ public class AppConfig {
     @Value("${spring.mail.smtp.ssl.trust}")
     private String mail_smtp_ssl_trust;
 
-    // @Value("${mail.transport.protocol}")
-    // private String mail_transport_protocol;
+    @Value("${mail.transport.protocol}")
+    private String mail_transport_protocol;
 
     @Bean
     public JavaMailSender gtJavaMailSender() {

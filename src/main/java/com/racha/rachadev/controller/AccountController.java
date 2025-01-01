@@ -57,6 +57,7 @@ public class AccountController {
 
     @PostMapping("/register")
     public String register_user(@Valid @ModelAttribute("account") Account account, BindingResult result) {
+        System.out.println(result.toString());
         if (result.hasErrors()) {
             return "account_views/register";
         }
@@ -106,7 +107,7 @@ public class AccountController {
         if (optionalAccount.isPresent()) {
             Account account_by_id = accountService.findById(account.getId()).get();
             account_by_id.setAge(account.getAge());
-            account_by_id.setDate_of_birth(account.getDate_of_birth());
+            account_by_id.setDateOfBirth(account.getDateOfBirth());
             account_by_id.setFirstName(account.getFirstName());
             account_by_id.setGender(account.getGender());
             account_by_id.setLastName(account.getLastName());
@@ -213,7 +214,7 @@ public class AccountController {
             Account account = accountService.findById(optionalAccount.get().getId()).get();
             String reset_token = UUID.randomUUID().toString();
             account.setPasswordResetToken(reset_token);
-            account.setPassword_reset_token_expiry(LocalDateTime.now().plusMinutes(password_token_timeout));
+            account.setPasswordResetTokenExpiry(LocalDateTime.now().plusMinutes(password_token_timeout));
             accountService.save(account);
             String reset_message = "This is the reset password link: " + site_domain + "change-password?token="
                     + reset_token;
@@ -246,7 +247,7 @@ public class AccountController {
             Account account = accountService.findById(optinal_account.get().getId()).get();
             LocalDateTime now = LocalDateTime.now();
 
-            if (now.isAfter(optinal_account.get().getPassword_reset_token_expiry())) {
+            if (now.isAfter(optinal_account.get().getPasswordResetTokenExpiry())) {
                 attributes.addFlashAttribute("error", "Token Expired");
                 return "redirect:/forgot-password";
             }

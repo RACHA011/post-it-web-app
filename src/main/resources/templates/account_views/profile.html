@@ -151,16 +151,16 @@
                 </div>
                 <div>
                   <input
-                    id="date_of_birth"
+                    id="dateOfBirth"
                     type="date"
-                    th:field="*{date_of_birth}"
+                    th:field="*{dateOfBirth}"
                     class="form-control"
                     placeholder="Date of Birth"
                     required
                   />
                   <p
-                    th:if="${#fields.hasErrors('date_of_birth')}"
-                    th:errors="*{date_of_birth}"
+                    th:if="${#fields.hasErrors('dateOfBirth')}"
+                    th:errors="*{dateOfBirth}"
                     class="alert alert-danger"
                     role="alert"
                   >
